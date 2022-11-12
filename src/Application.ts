@@ -6,6 +6,9 @@ import AuthScreen from "./screens/auth/AuthScreen";
 import AuthArgs from "./screens/auth/AuthArgs";
 import AuthResult from "./screens/auth/AuthResult";
 import AuthActions from "./screens/auth/AuthActions";
+import BoardsArgs from "./screens/boards/BoardsArgs";
+import BoardsScreen from "./screens/boards/BoardsScreen";
+import BoardsResult from "./screens/boards/BoardsResult";
 
 class Application {
     private config?: Config;
@@ -49,6 +52,8 @@ class Application {
                     config.jira.email = result.email;
                     config.jira.apiToken = result.apiToken;
                     config.save();
+
+                    this.boardsScreen();
                 } else {
                     this.exit();
                 }
@@ -56,6 +61,29 @@ class Application {
     }
 
     private async boardsScreen() {
+        const config = await this.getConfig();
+        const jiraGateway = await this.getJiraGateway();
+
+        if (config.user.preferredBoard > 0) {
+            return await this.tasksScreen();
+        }
+
+        const allBoards = await jiraGateway.getAllBoards();
+        const args: BoardsArgs = {
+            screen: this.screen,
+            boards: allBoards,
+        };
+
+        (new BoardsScreen()).run(args)
+            .then((result: BoardsResult) => {
+                config.user.preferredBoard = result.boardId;
+                config.save();
+
+                this.tasksScreen();
+            });
+    }
+
+    private async tasksScreen() {
 
     }
 

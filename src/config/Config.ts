@@ -1,13 +1,16 @@
 import Jira from "./Jira";
+import User from "./User";
 import * as fs from 'node:fs/promises';
 
 const PATH: string = 'config.json';
 
 class Config {
     public jira: Jira
+    public user: User;
 
     constructor() {
         this.jira = new Jira();
+        this.user = new User();
     }
 
     public static async init(): Promise<Config> {

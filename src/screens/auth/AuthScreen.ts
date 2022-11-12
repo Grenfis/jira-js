@@ -10,7 +10,7 @@ class AuthScreen implements IScreen {
 
     run(args: AuthArgs): Promise<AuthResult> {
         return new Promise((resolve, reject) => {
-            let screen = args.screen;
+            const screen = args.screen;
 
             let authForm = blessed.form({
                 parent: screen,
