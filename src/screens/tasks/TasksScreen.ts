@@ -11,6 +11,9 @@ class TasksScreen implements IScreen {
 
             const filtersList = this.drawFiltersList(args);
             const activeFiltersList = this.drawActiveFiltersList(args);
+            const todoList = this.drawToDoList(args);
+            const inProgressList = this.drawInProgressList(args);
+            const doneList = this.drawDoneList(args);
 
             filtersList.on('select', item => {
                 const index = args.filters.findIndex(filter => {
@@ -106,6 +109,132 @@ class TasksScreen implements IScreen {
         });
 
         return activeFiltersList;
+    }
+
+    private drawToDoList(args: TasksArgs): Widgets.ListElement {
+        const screen = args.screen;
+
+        blessed.text({
+            parent: screen,
+            top: 0,
+            left: '20%',
+            content: 'ToDo',
+        });
+
+        const todoList = blessed.list({
+            parent: screen,
+            top: 1,
+            left: '20%',
+            height: '30%',
+            width: '80%',
+            keys: true,
+            mouse: true,
+            name: 'active_filters',
+            border: {
+                type: 'line'
+            },
+            style: {
+                selected: {
+                    fg: 'blue',
+                }
+            },
+            scrollable: true,
+            scrollbar: {
+                style: {
+                    bg: 'yellow'
+                }
+            }
+        });
+
+        args.todoTasks.forEach(task => {
+            todoList.addItem(task.summary);
+        });
+
+        return todoList;
+    }
+
+    private drawInProgressList(args: TasksArgs): Widgets.ListElement {
+        const screen = args.screen;
+
+        blessed.text({
+            parent: screen,
+            top: '30%+1',
+            left: '20%',
+            content: 'In Progress',
+        });
+
+        const inProgressList = blessed.list({
+            parent: screen,
+            top: '30%+2',
+            left: '20%',
+            height: '30%',
+            width: '80%',
+            keys: true,
+            mouse: true,
+            name: 'active_filters',
+            border: {
+                type: 'line'
+            },
+            style: {
+                selected: {
+                    fg: 'blue',
+                }
+            },
+            scrollable: true,
+            scrollbar: {
+                style: {
+                    bg: 'yellow'
+                }
+            }
+        });
+
+        args.inProgressTasks.forEach(task => {
+            inProgressList.addItem(task.summary);
+        });
+
+        return inProgressList;
+    }
+
+    private drawDoneList(args: TasksArgs): Widgets.ListElement {
+        const screen = args.screen;
+
+        blessed.text({
+            parent: screen,
+            top: '60%+1',
+            left: '20%',
+            content: 'Done',
+        });
+
+        const doneList = blessed.list({
+            parent: screen,
+            top: '60%+2',
+            left: '20%',
+            height: '30%',
+            width: '80%',
+            keys: true,
+            mouse: true,
+            name: 'active_filters',
+            border: {
+                type: 'line'
+            },
+            style: {
+                selected: {
+                    fg: 'blue',
+                }
+            },
+            scrollable: true,
+            scrollbar: {
+                style: {
+                    bg: 'yellow'
+                }
+            }
+        });
+
+        args.doneTasks.forEach(task => {
+            doneList.addItem(task.summary);
+        });
+
+        return doneList;
     }
 }
 

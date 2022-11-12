@@ -2,6 +2,7 @@ import {AgileClient} from 'jira.js';
 import Config from "../config/Config";
 import AllBoardsDto from "./dto/AllBoardsDto";
 import QuickFilter from "./dto/QuickFilter";
+import TaskDto from "./dto/TaskDto";
 
 class JiraGateway {
     private readonly client: AgileClient;
@@ -49,6 +50,26 @@ class JiraGateway {
                     }
                 });
             });
+    }
+
+    public getAllTasks(boardId: number, filterJql?: string): Promise<TaskDto[]> {
+        return this.client.board.getIssuesForBoard({
+            boardId: boardId,
+            jql: filterJql,
+        }).then((tasks): TaskDto[] => {
+            return tasks.issues.map((issue): TaskDto => {
+                return {
+                    id: issue.id ?? '',
+                    key: issue.key ?? '',
+                    summary: issue.fields?.summary ?? '',
+                    category: {
+                        id: issue.fields?.status?.statusCategory.id,
+                        key: issue.fields?.status?.statusCategory.key,
+                        name: issue.fields?.status?.statusCategory.name,
+                    }
+                }
+            });
+        });
     }
 }
 

@@ -14,6 +14,7 @@ import TasksScreen from "./screens/tasks/TasksScreen";
 import TasksResult from "./screens/tasks/TasksResult";
 import TasksActions from "./screens/tasks/TasksActions";
 import QuickFilter from "./jira/dto/QuickFilter";
+import {Statuses as TaskStatusCategory} from "./jira/dto/TaskStatusCategoryDto";
 
 class Application {
     private config?: Config;
@@ -101,10 +102,21 @@ class Application {
                 }) ?? new QuickFilter(0, '', '');
             });
 
+            const filterString = activeFilters.map(filter => {
+                return filter.jql;
+            }).join(' and ');
+            const tasks = await jiraGateway.getAllTasks(config.user.preferredBoard, filterString);
+            const todoTasks = tasks.filter(task => task.category.id === TaskStatusCategory.todo);
+            const inProgressTasks = tasks.filter(task => task.category.id === TaskStatusCategory.inProgress);
+            const doneTasks = tasks.filter(task => task.category.id === TaskStatusCategory.done);
+
             const args: TasksArgs = {
                 screen: this.screen,
                 filters: filters,
                 activeFilters: activeFilters,
+                todoTasks: todoTasks,
+                inProgressTasks: inProgressTasks,
+                doneTasks: doneTasks,
             };
 
             run = await (new TasksScreen()).run(args)
