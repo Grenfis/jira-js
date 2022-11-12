@@ -1,7 +1,7 @@
 import {AgileClient} from 'jira.js';
 import Config from "../config/Config";
 import AllBoardsDto from "./dto/AllBoardsDto";
-import boardsResult from "../screens/boards/BoardsResult";
+import QuickFilter from "./dto/QuickFilter";
 
 class JiraGateway {
     private readonly client: AgileClient;
@@ -31,6 +31,23 @@ class JiraGateway {
                         }
                     })
                 };
+            });
+    }
+
+    public getQuickFilters(boardId: number): Promise<QuickFilter[]> {
+        return this.client.board.getAllQuickFilters({boardId: boardId})
+            .then(filters => {
+                if (filters.values === undefined) {
+                    return [];
+                }
+
+                return filters.values?.map(filter => {
+                    return {
+                        id: filter.id ?? 0,
+                        jql: filter.jql ?? '',
+                        name: filter.name ?? '',
+                    }
+                });
             });
     }
 }

@@ -9,6 +9,11 @@ import AuthActions from "./screens/auth/AuthActions";
 import BoardsArgs from "./screens/boards/BoardsArgs";
 import BoardsScreen from "./screens/boards/BoardsScreen";
 import BoardsResult from "./screens/boards/BoardsResult";
+import TasksArgs from "./screens/tasks/TasksArgs";
+import TasksScreen from "./screens/tasks/TasksScreen";
+import TasksResult from "./screens/tasks/TasksResult";
+import TasksActions from "./screens/tasks/TasksActions";
+import QuickFilter from "./jira/dto/QuickFilter";
 
 class Application {
     private config?: Config;
@@ -23,7 +28,7 @@ class Application {
         });
 
         this.screen.key(['escape', 'q'], (ch, key) => {
-            this.exit();
+            Application.exit();
         });
     }
 
@@ -55,7 +60,7 @@ class Application {
 
                     this.boardsScreen();
                 } else {
-                    this.exit();
+                    Application.exit();
                 }
             });
     }
@@ -84,10 +89,52 @@ class Application {
     }
 
     private async tasksScreen() {
+        const config = await this.getConfig();
+        const jiraGateway = await this.getJiraGateway();
+        const filters = await jiraGateway.getQuickFilters(config.user.preferredBoard);
 
+        let run = true;
+        while(run) {
+            const activeFilters: QuickFilter[] = config.user.activeTasksFilters.map(id => {
+                return filters.find(filter => {
+                    return filter.id === id;
+                }) ?? new QuickFilter(0, '', '');
+            });
+
+            const args: TasksArgs = {
+                screen: this.screen,
+                filters: filters,
+                activeFilters: activeFilters,
+            };
+
+            run = await (new TasksScreen()).run(args)
+                .then((result: TasksResult) => {
+                    switch (result.action) {
+                        case TasksActions.ApplyFilter:
+                            if (result.filterId !== undefined) {
+                                if (config.user.activeTasksFilters.findIndex(id => id === result.filterId) < 0) {
+                                    config.user.activeTasksFilters.push(result.filterId);
+                                    config.save();
+                                }
+                                return true;
+                            }
+                            break;
+                        case TasksActions.RemoveFilter:
+                            if (result.filterId !== undefined) {
+                                if (config.user.activeTasksFilters.findIndex(id => id === result.filterId) >= 0) {
+                                    config.user.activeTasksFilters = config.user.activeTasksFilters.filter(id => id !== result.filterId);
+                                    config.save();
+                                }
+                                return true;
+                            }
+                            break;
+                    }
+                    return false;
+                });
+        }
     }
 
-    private exit(): boolean {
+    private static exit(): boolean {
         return process.exit(0);
     }
 

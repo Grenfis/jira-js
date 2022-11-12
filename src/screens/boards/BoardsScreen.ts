@@ -1,8 +1,7 @@
 import IScreen from "../IScreen";
 import BoardsArgs from "./BoardsArgs";
 import BoardsResult from "./BoardsResult";
-import blessed, {Widgets} from "blessed";
-import BlessedElement = Widgets.BlessedElement;
+import blessed from "blessed";
 
 class BoardsScreen implements IScreen {
     run(args: BoardsArgs): Promise<BoardsResult> {
@@ -30,8 +29,11 @@ class BoardsScreen implements IScreen {
             });
 
             list.on('select', item => {
+                const index = args.boards.values.findIndex(board => {
+                    return board.name === item.content;
+                });
                 resolve({
-                    boardId: args.boards.values[item.index - 1].id,
+                    boardId: args.boards.values[index].id,
                 });
             })
 
